@@ -37,7 +37,7 @@ class NewProject(xappt.BaseTool):
                                       description="Which version of Godot do you want to target?")
     gdnative = xappt.ParamBool(options={'short_name': "n"},
                                description="Include GDNative C++ support?")
-    class_name = xappt.ParamString(options={'short_name': "c"}, default="GDNative",
+    class_name = xappt.ParamString(options={'short_name': "c"}, default="GDExample",
                                    description="What should the GDNative class be called?")
 
     def __init__(self, **kwargs):
