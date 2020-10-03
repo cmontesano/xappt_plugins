@@ -1,0 +1,10 @@
+[gd_resource type="NativeScript" load_steps=2 format=2]
+
+[ext_resource path="res://bin/{CLASS_NAME!l}.gdnlib" type="GDNativeLibrary" id=1]
+
+[resource]
+
+resource_name = "{CLASS_NAME!l}"
+class_name = "{CLASS_NAME}"
+library = ExtResource( 1 )
+
