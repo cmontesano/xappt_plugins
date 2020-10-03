@@ -7,6 +7,8 @@ I am in the process of porting several plugins from a system that I wrote for my
 # stitch
 ### xappt_plugins/plugins/image_manipulation/stitch_frames.py
 
+![stitch](images/stitch-plugin.png)
+
 This plugin will scan a folder for images and stitch matching images into a single image. I use this for assembling spritesheets.
 
 #### Parameters
@@ -24,6 +26,8 @@ This plugin will scan a folder for images and stitch matching images into a sing
 
 # newproject
 ### xappt_plugins/plugins/godot/plugins/new_project.py
+
+![newproject](images/newproject-plugin.png)
 
 This plugin will create a new Godot project from a template with optional encryption, GDNative starter files, and build scripts. A simple JSON manifest will be created in the project's folder with some information that can be used by other some plugins.
 
