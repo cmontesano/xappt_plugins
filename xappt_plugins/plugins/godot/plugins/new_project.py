@@ -50,6 +50,10 @@ class NewProject(xappt.BaseTool):
             "GDNATIVE": "",
         }
 
+    @classmethod
+    def help(cls) -> str:
+        return "Create a new Godot project from a template with optional encryption and GDNative starter files."
+
     @staticmethod
     def _initialize_git_repository(output_path):
         cmd = xappt.CommandRunner()
