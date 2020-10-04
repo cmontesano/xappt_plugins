@@ -62,3 +62,25 @@ This plugin will create a new Godot project from a template with optional encryp
   - When `True` this will create sample GDNative C++ source files and build scripts to make it easy to compile. Currently these build scripts are for Linux only, and assume that `godot` and `scons` are on your `PATH` environment variable and that the necessary build requirements are satisfied.
 - class_name
   - This is the class name that will be used in the example GDNative files. This is just to save you some renaming. The default is `GDExample`. The source files are pulled directly from the official Godot GDNative C++ documentation.
+
+# timelapse
+### xappt_plugins/plugins/image_manipulation/time_lapse.py
+
+![timelapse](images/timelapse-plugin.png)
+
+This plugin will take a screenshot at fixed user-defined intervals, with configurable image format and file naming.
+
+#### Parameters
+
+- output_path
+  - This is the directory where the screenshots will be saved.
+- output_name
+  - This is the file name prefix for each screenshot.
+- time_format
+  - This is the date format, which must be compatible with [python's datetime module](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).
+- output_format
+  - Choose whether the screenshots will be JPEG or PNG images.
+- interval
+  - Specify the time to wait between each screenshot.
+- bounds
+  - This allows you to specify recording coordinates in the format x1,y1,x2,y2. Leave this blank to use the full screen.
