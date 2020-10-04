@@ -1,8 +1,22 @@
 # xappt_plugins
 
-This is a collection of various plugins for xappt. 
+This is a collection of various plugins for [xappt](https://github.com/cmontesano/xappt).
 
 I am in the process of porting several plugins from a system that I wrote for myself some time ago. I will try to update this README with notes as plugins are ready.
+
+# Running xappt/xappt_qt
+
+I've provided a couple of Linux scripts to help get things set up. These live in `xappt_plugins/scripts`.
+
+The basic idea is to install the python packages listed in [requirements.txt](https://github.com/cmontesano/xappt_plugins/blob/master/requirements.txt), set the `XAPPT_PLUGIN_PATH` environment variable, and then invoke `xappt-browser`, which will be installed as an external python script when installing `xappt_qt`.
+
+The script [create_environment.sh](https://github.com/cmontesano/xappt_plugins/blob/master/scripts/create_environment.sh) will check for Python 3*, and the `pip` and `venv` modules. If all of this is satisfied a virtual environment will be created and the requirements will be installed.
+
+<small>* 3.7+ is required, but it only checks for `python3`</small>
+
+The other script [run_xappt.sh](https://github.com/cmontesano/xappt_plugins/blob/master/scripts/run_xappt.sh) assumes that a virtual environment with all of the requirements already exists at `xappt_plugins/venv`. This script will activate the virtualenvironment, set the correct environment variables, and launch the **xappt** interface provided by **xappt_qt**.
+
+These scripts should work on OS X, but that's completely untested. And it should be fairly easy to create Windows equivalents. If someone wants to contribute those I'll be happy to include them.
 
 # stitch
 ### xappt_plugins/plugins/image_manipulation/stitch_frames.py
