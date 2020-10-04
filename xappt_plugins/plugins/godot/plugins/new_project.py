@@ -51,6 +51,10 @@ class NewProject(xappt.BaseTool):
         }
 
     @classmethod
+    def name(cls) -> str:
+        return "new-project"
+
+    @classmethod
     def help(cls) -> str:
         return "Create a new Godot project from a template with optional encryption and GDNative starter files."
 
