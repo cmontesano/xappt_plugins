@@ -141,6 +141,10 @@ class StitchImages(xappt.BaseTool):
     def help(cls) -> str:
         return "Stitch a directory of images together. The images must all share the same prefix."
 
+    @classmethod
+    def collection(cls) -> str:
+        return "Image"
+
     def execute(self, interface: Optional[xappt.BaseInterface], **kwargs) -> int:
         if interface is None:
             interface = xappt.get_interface()

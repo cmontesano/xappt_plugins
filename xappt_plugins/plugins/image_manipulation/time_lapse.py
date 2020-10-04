@@ -41,6 +41,10 @@ class TimeLapse(xappt.BaseTool):
     def help(cls) -> str:
         return "Take a screenshot at fixed intervals."
 
+    @classmethod
+    def collection(cls) -> str:
+        return "Image"
+
     def on_close(self):
         self._closed = True
 
