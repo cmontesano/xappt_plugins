@@ -2,5 +2,6 @@ boltons~=20.2.1
 Pillow~=7.2.0
 pyseq~=0.5.2
 pycryptodome~=3.9.8
+pyscreenshot~=2.2
 xappt~=0.3.1
 xappt-qt~=0.1.2
