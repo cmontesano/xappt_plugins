@@ -29,9 +29,9 @@ This plugin will scan a folder for images and stitch matching images into a sing
 #### Parameters
 
 - input_path
-  - This is the folder containing the images to stitch. If multiple sequences exist in this folder they will be collected and processed individually. Currently PNG and JPEG files are supported. There is a folder full of test images in `xappt_plugins/test_data/frames_to_stitch`. Also, and this is arguably a bug, this plugin expects frame numbers to occur just before the extension - e.g. `filename001.png`. This is because the file name is being sliced into `head`, `frame`, and `tail`, with `tail` being treated as the file extension, although that is not necessarily the case. I'll fix this soon.
+  - This is the folder containing the images to stitch. If multiple sequences exist in this folder they will be collected and processed individually. Currently PNG and JPEG files are supported. There is a folder full of test images in `xappt_plugins/test_data/frames_to_stitch`.
 - output_path
-  - This is where the stitched images will be saved. Each image will be named with the prefix of the corresponding sequence, and the word "stitched" embedded before the sequence. For example, `filename001.png` will be stitched as `filename.stitched.png`.
+  - This is where the stitched images will be saved. Each stitched image will be named with the word "\[stitched]" replacing the frame numbers. For example, the sequence `filename001.png`, `filename002.png`, `filename003.png` will be combined in an image named `filename[stitched].png`.
 - columns
   - This is the number of images per row in the stitched image.
 - replace

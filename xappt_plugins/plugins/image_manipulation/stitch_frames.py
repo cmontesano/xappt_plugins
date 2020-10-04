@@ -92,14 +92,14 @@ def stitch_sequence(interface: xappt.BaseInterface, sequence: pyseq.Sequence, **
         logger.warning(f"Skipping '{sequence[0]}'. Not a sequence.")
         return
 
-    extension = sequence.tail().lower()
+    extension = os.path.splitext(sequence.format("%h%p%t"))[-1].lower()
     if extension not in SUPPORTED_EXTENSIONS.keys():
         logger.warning(f"'{extension}' not supported")
         return
 
     image_mode = SUPPORTED_EXTENSIONS[extension]['mode']
 
-    output_file = os.path.join(output_path, f"{sequence.head()}.stitched{sequence.tail()}")
+    output_file = os.path.join(output_path, f"{sequence.head()}[stitched]{sequence.tail()}")
     if os.path.isfile(output_file) and not kwargs['replace']:
         raise OSError(f"File exists: '{output_file}'")
 
