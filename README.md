@@ -12,7 +12,7 @@ The basic idea is to install the python packages listed in [requirements.txt](ht
 
 The script [create_environment.sh](https://github.com/cmontesano/xappt_plugins/blob/master/scripts/create_environment.sh) will check for Python 3*, and the `pip` and `venv` modules. If all of this is satisfied a virtual environment will be created and the requirements will be installed.
 
-<small>* 3.7+ is required, but it only checks for `python3`</small>
+<small>* Python 3.7+ is required for xappt, but the script only checks for `python3`</small>
 
 The other script [run_xappt.sh](https://github.com/cmontesano/xappt_plugins/blob/master/scripts/run_xappt.sh) assumes that a virtual environment with all of the requirements already exists at `xappt_plugins/venv`. This script will activate the virtualenvironment, set the correct environment variables, and launch the **xappt** interface provided by **xappt_qt**.
 
