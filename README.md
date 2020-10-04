@@ -14,7 +14,8 @@ The script [create_environment.sh](https://github.com/cmontesano/xappt_plugins/b
 
 <small>* Python 3.7+ is required for xappt, but the script only checks for `python3`</small>
 
-The other script [run_xappt.sh](https://github.com/cmontesano/xappt_plugins/blob/master/scripts/run_xappt.sh) assumes that a virtual environment with all of the requirements already exists at `xappt_plugins/venv`. This script will activate the virtualenvironment, set the correct environment variables, and launch the **xappt** interface provided by **xappt_qt**.
+The [run_xappt.sh](https://github.com/cmontesano/xappt_plugins/blob/master/scripts/run_xappt.sh) script assumes that a virtual environment with all of the requirements already exists at `xappt_plugins/venv`. 
+This script will activate the virtual environment, set the `XAPPT_PLUGIN_PATH` environment variable, and launch the [xappt](https://github.com/cmontesano/xappt) interface provided by [xappt_qt](https://github.com/cmontesano/xappt_qt).
 
 These scripts should work on OS X, but that's completely untested. And it should be fairly easy to create Windows equivalents. If someone wants to contribute those I'll be happy to include them.
 
@@ -23,7 +24,7 @@ These scripts should work on OS X, but that's completely untested. And it should
 
 ![stitch](images/stitch-plugin.png)
 
-This plugin will scan a folder for images and stitch matching images into a single image. I use this for assembling spritesheets.
+This plugin will scan a folder for images and stitch matching images into a single image. I use this for assembling sprite sheets.
 
 #### Parameters
 
