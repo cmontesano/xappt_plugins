@@ -145,9 +145,6 @@ class StitchImages(xappt.BaseTool):
         if interface is None:
             interface = xappt.get_interface()
 
-        if interface.ask("should I fail?"):
-            return 1
-
         sequences = pyseq.get_sequences(os.listdir(self.input_path.value))
         for sequence in sequences:
             stitch_sequence(interface, sequence, **self.param_dict())
