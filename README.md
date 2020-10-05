@@ -39,10 +39,10 @@ This plugin will scan a folder for images and stitch matching images into a sing
 - force_po2
   - When `True` this will force the stitched image's width and height to round up to a power of two. For example, if you are stitching 3 images all sized **256x256**, the output resolution would be **768x256**. That width is not a power of two, so when this parameter is `True` the image will be right/bottom padded with empty space to reach a resolution of **1024x256**.
 
-# newproject
+# new-project
 ### xappt_plugins/plugins/godot/plugins/new_project.py
 
-![newproject](images/newproject-plugin.png)
+![new-project](images/newproject-plugin.png)
 
 This plugin will create a new Godot project from a template with optional encryption, GDNative starter files, and build scripts. A simple JSON manifest will be created in the project's folder with some information that can be used by other some plugins.
 
@@ -84,3 +84,43 @@ This plugin will take a screenshot at fixed user-defined intervals, with configu
   - Specify the time to wait between each screenshot.
 - bounds
   - This allows you to specify recording coordinates in the format x1,y1,x2,y2. Leave this blank to use the full screen.
+
+# split
+### xappt_plugins/plugins/image_manipulation/split_image.py
+
+![split](images/split-plugin.png)
+
+This plugin will split an image into tiles. This is the reverse of the `stitch` plugin.
+
+#### Parameters
+
+- input_image
+  - This is the image that will be cut into individual tiles.
+- output_path
+  - This is where extracted tile images will be saved. Each tile will be numbered with a 3 digit padded index, starting at 1 in [row-major order](https://en.wikipedia.org/wiki/Row-_and_column-major_order).
+- tile_size
+  - This is the number of pixels on the width or height of a tile. All tiles are assumed to be square.
+- replace
+  - Set this to `True` to replace any existing tiles. If False an error will be raised if a tile with the same name already exists in the output path.
+
+# make-templates
+### xappt_plugins/plugins/godot/plugins/make_templates.py
+
+![make-templates](images/maketemplates-plugin.png)
+
+This plugin will attempt to compile Godot templates based on the `project.manifest` file created by the `new-project` plugin. Currently this is limited to Linux systems, mostly because I am a Linux user, but also because it's relatively straightforward to set up a wide variety of cross platform compiling options (Windows, OS X, and Android) on Linux.
+
+See the [Godot documentation](https://docs.godotengine.org/en/stable/development/compiling/index.html) for help setting up cross compilation.
+
+#### Parameters
+
+- manifest_path
+  - This is the location of a `project.manifest` file that was created with the `new-project` plugin.
+- platform
+  - This is a list of all platforms to build. If set up properly you should be able to compile all from a single Linux system.
+- strip
+  - Enable this option to strip symbols from binaries. This can drastically reduce the file size of the templates.
+- tools
+  - When `True` the Godot editor will also be built. This is usually not necessary unless a custom module is selected.
+- modules
+  - Select which third party modules should be compiled into the templates and editors.
