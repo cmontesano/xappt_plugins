@@ -6,10 +6,17 @@ import shutil
 from typing import Generator, Optional
 
 import xappt
-import xappt_qt
 
 from xappt_plugins.validators import *
 from xappt_plugins.utilities import open_file
+
+
+class ValidateProjectManifest(xappt.BaseValidator):
+    def validate(self, value: str) -> str:
+        value = os.path.abspath(value)
+        if os.path.basename(value).lower() != "project.manifest":
+            raise xappt.ParameterValidationError("File must be named 'project.manifest'.")
+        return value
 
 
 NAME_MAPPING = (
@@ -100,7 +107,7 @@ class MakeTemplates(xappt.BaseTool):
     manifest_path = xappt.ParamString(options={"ui": "file-open"},
                                       default=os.path.join(os.getcwd(), "project.manifest"),
                                       description="Where is the target project.manifest?",
-                                      validators=[ValidateFileExists])
+                                      validators=[ValidateFileExists, ValidateProjectManifest])
     platform = xappt.ParamList(options={'short_name': "p"},
                                choices=("windows", "android", "linux", "osx"),
                                description="For which platforms should templates be built?")
@@ -127,7 +134,7 @@ class MakeTemplates(xappt.BaseTool):
     def collection(cls) -> str:
         return "Godot"
 
-    def _build(self, **kwargs):
+    def _build_platform_template(self, **kwargs):
         cwd = kwargs['cwd']
         bin_path = os.path.join(cwd, "bin")
         output_path = kwargs['output_path']
@@ -198,17 +205,10 @@ class MakeTemplates(xappt.BaseTool):
         for f in collected_files:
             yield f
 
-    def on_close(self):
-        pass
-
-    def execute(self, interface: Optional[xappt.BaseInterface], **kwargs) -> int:
+    def run_build(self, interface: xappt.BaseInterface) -> int:
         manifest_path = self.manifest_path.value
-        assert os.path.basename(manifest_path).lower() == "project.manifest"
         project_root = os.path.dirname(manifest_path)
         template_path = os.path.join(project_root, "templates")
-
-        if interface is None:
-            interface = xappt.get_interface()
 
         interface.progress_start()
 
@@ -255,10 +255,48 @@ class MakeTemplates(xappt.BaseTool):
                         'cwd': godot_path,
                         'output_path': template_path,
                     })
-                    self._build(**argument_dict)
+                    self._build_platform_template(**argument_dict)
+
         interface.progress_end()
 
         if interface.ask("Build complete.\n\nOpen build folder?"):
             open_file(template_path)
 
         return 0
+
+    def check_prerequisites(self):
+        if os.name != "posix":
+            raise RuntimeError("This plugins is currently only supported on posix systems.")
+        if shutil.which("git") is None:
+            raise RuntimeError("'git' binary not found.")
+        if shutil.which("scons") is None:
+            raise RuntimeError("'scons' binary not found.")
+        if "osx" in self.platform.value:
+            osxcross = os.environ.get("OSXCROSS_ROOT")
+            if osxcross is None:
+                raise RuntimeError("OSXCROSS_ROOT environment variable is not set.")
+            else:
+                if not os.path.isdir(osxcross):
+                    raise RuntimeError(f"OSXCROSS_ROOT folder ({osxcross}) does not exist.")
+        if "windows" in self.platform.value:
+            if shutil.which("x86_64-w64-mingw32-strip") is None:
+                raise RuntimeError("'mingw32' binaries not found.")
+            if shutil.which("i686-w64-mingw32-strip") is None:
+                raise RuntimeError("'mingw32' binaries not found.")
+
+    def execute(self, interface: Optional[xappt.BaseInterface], **kwargs) -> int:
+        interface = interface or xappt.get_interface()
+
+        try:
+            self.check_prerequisites()
+        except RuntimeError as e:
+            interface.error(str(e))
+            interface.progress_end()
+            return 1
+
+        try:
+            return self.run_build(interface)
+        except AssertionError as e:
+            interface.error(str(e))
+            interface.progress_end()
+            return 1
