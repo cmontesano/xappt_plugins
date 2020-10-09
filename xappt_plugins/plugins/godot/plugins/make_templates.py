@@ -3,9 +3,10 @@ import os
 import re
 import shutil
 
-from typing import Generator, Optional
+from typing import Callable, Generator, Optional, Sequence
 
 import xappt
+import xappt_qt
 
 from xappt_plugins.validators import *
 from xappt_plugins.utilities import open_file
@@ -121,6 +122,8 @@ class MakeTemplates(xappt.BaseTool):
     def __init__(self):
         super().__init__()
         self.cmd = xappt.CommandRunner()
+        self.stdout_fn: Optional[Callable] = None
+        self.stderr_fn: Optional[Callable] = None
 
     @classmethod
     def name(cls) -> str:
@@ -158,20 +161,22 @@ class MakeTemplates(xappt.BaseTool):
             for arch in architectures:
                 variables['arch'] = arch
                 build_cmd = [c.format_map(variables) for c in command]
-                self._run_command(build_cmd, cwd)
+                self._run_command(build_cmd, cwd=cwd)
                 self._collect_files(bin_path, output_path, **variables)
             for post_target in post_target_commands:
                 post_cmd = [c.format_map(variables) for c in post_target['command']]
                 post_cmd_cwd = post_target.get('cwd', cwd).format_map(variables)
-                self._run_command(post_cmd, post_cmd_cwd)
+                self._run_command(post_cmd, cwd=post_cmd_cwd)
                 self._collect_files(bin_path, output_path, **variables)
         if build_editor and "editor" in kwargs:
             editor_command = kwargs['editor']
-            self._run_command(editor_command, cwd)
+            self._run_command(editor_command, cwd=cwd)
             self._collect_files(bin_path, output_path, **variables)
 
-    def _run_command(self, command, cwd):
-        result = self.cmd.run(command, cwd=cwd, silent=False, shell=os.name == "nt").result
+    def _run_command(self, command: Sequence, *, cwd: Optional[str]):
+        silent = self.stdout_fn is not None or self.stderr_fn is not None
+        result = self.cmd.run(command, cwd=cwd, silent=silent,
+                              stdout_fn=self.stdout_fn, stderr_fn=self.stderr_fn).result
         assert result == 0, f"Command failed with code {result}: '{' '.join(command)}'"
 
     def _collect_files(self, source: str, destination: str, **kwargs):
@@ -191,7 +196,8 @@ class MakeTemplates(xappt.BaseTool):
                 if name_match_regex.match(file_name) is not None:
                     unstripped_file_name = os.path.join(backup_path, file_name)
                     shutil.move(binary, unstripped_file_name)
-                    self.cmd.run((strip_bin, unstripped_file_name, "-o", binary), silent=False)
+                    # self.cmd.run((strip_bin, unstripped_file_name, "-o", binary), silent=False)
+                    self._run_command((strip_bin, unstripped_file_name, "-o", binary))
 
     @staticmethod
     def _collect_binaries(src_path: str, dst_path: str) -> Generator[str, None, None]:
@@ -223,21 +229,28 @@ class MakeTemplates(xappt.BaseTool):
 
         with xappt.temp_path() as tmp:
             interface.progress_update("Cloning Godot Engine repository...", 0.0)
-            assert self.cmd.run(("git", "clone", "https://github.com/godotengine/godot.git", "godot-build"),
-                                cwd=tmp, silent=False).result == 0
+            # assert self.cmd.run(("git", "clone", "https://github.com/godotengine/godot.git", "godot-build"),
+            #                     cwd=tmp, silent=False).result == 0
+            self._run_command(("git", "clone", "https://github.com/godotengine/godot.git", "godot-build"), cwd=tmp)
+
             godot_path = os.path.join(tmp, "godot-build")
             interface.progress_update(f"Fetching...", 0.33)
-            assert self.cmd.run(("git", "fetch", "--all", "--tags"), cwd=godot_path, silent=False).result == 0
+            # assert self.cmd.run(("git", "fetch", "--all", "--tags"), cwd=godot_path, silent=False).result == 0
+            self._run_command(("git", "fetch", "--all", "--tags"), cwd=godot_path)
+
             interface.progress_update(f"Checking out branch '{branch}'...", 0.66)
-            assert self.cmd.run(("git", "checkout", f"tags/{branch}", "-b", branch),
-                                cwd=godot_path, silent=False).result == 0
+            # assert self.cmd.run(("git", "checkout", f"tags/{branch}", "-b", branch),
+            #                     cwd=godot_path, silent=False).result == 0
+            self._run_command(("git", "checkout", f"tags/{branch}", "-b", branch), cwd=godot_path)
+
             selected_modules = self.modules.value
             for i, module in enumerate(selected_modules):
                 progress = (i / len(selected_modules))
                 interface.progress_update(f"Cloning module '{module}'...", progress)
                 module_dict = GODOT_MODULES[module]
-                assert self.cmd.run(("git", "clone", module_dict['repository'], module),
-                                    cwd=tmp, silent=False).result == 0
+                # assert self.cmd.run(("git", "clone", module_dict['repository'], module),
+                #                     cwd=tmp, silent=False).result == 0
+                self._run_command(("git", "clone", module_dict['repository'], module), cwd=tmp)
                 module_src_path = os.path.abspath(os.path.join(tmp, module, module_dict['src-folder']))
                 module_dst_path = os.path.abspath(os.path.join(godot_path, "modules", module_dict['dst-folder']))
                 shutil.copytree(module_src_path, module_dst_path)
@@ -286,6 +299,10 @@ class MakeTemplates(xappt.BaseTool):
 
     def execute(self, interface: Optional[xappt.BaseInterface], **kwargs) -> int:
         interface = interface or xappt.get_interface()
+
+        if isinstance(interface, xappt_qt.QtInterface):
+            self.stdout_fn = interface.runner.add_output_line
+            self.stderr_fn = interface.runner.add_error_line
 
         try:
             self.check_prerequisites()
