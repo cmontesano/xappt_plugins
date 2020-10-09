@@ -301,6 +301,7 @@ class MakeTemplates(xappt.BaseTool):
         interface = interface or xappt.get_interface()
 
         if isinstance(interface, xappt_qt.QtInterface):
+            interface.runner.show_console()
             self.stdout_fn = interface.runner.add_output_line
             self.stderr_fn = interface.runner.add_error_line
 
