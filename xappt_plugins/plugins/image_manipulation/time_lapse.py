@@ -48,7 +48,7 @@ class TimeLapse(xappt.BaseTool):
     def on_close(self):
         self._closed = True
 
-    def execute(self, interface: Optional[xappt.BaseInterface], **kwargs) -> int:
+    def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
         interval = max(2.0, self.interval.value)
         bounds = self.bounds.value
         if len(bounds):
@@ -57,14 +57,8 @@ class TimeLapse(xappt.BaseTool):
             assert len(bounds) == 4
         output_path = self.output_path.value
         output_filename = f"{self.output_name.value}{self.time_format.value}{self.output_format.value}"
-        if interface is None:
-            interface = xappt.get_interface()
-        if isinstance(interface, xappt_qt.interface.QtInterface):
-            update_fn = interface.instance.app.processEvents
+        if isinstance(interface, xappt_qt.QtInterface):
             interface.runner.rejected.connect(self.on_close)
-        else:
-            def update_fn():
-                pass
         interface.progress_start()
         try:
             while not self._closed:
@@ -82,7 +76,6 @@ class TimeLapse(xappt.BaseTool):
                         interface.progress_update("", 0.0)
                         break
                     interface.progress_update(message, elapsed/interval)
-                    update_fn()
                     time.sleep(0.1)
         except KeyboardInterrupt:
             pass

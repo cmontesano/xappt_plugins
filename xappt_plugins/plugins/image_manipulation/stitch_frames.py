@@ -145,10 +145,7 @@ class StitchImages(xappt.BaseTool):
     def collection(cls) -> str:
         return "Image"
 
-    def execute(self, interface: Optional[xappt.BaseInterface], **kwargs) -> int:
-        if interface is None:
-            interface = xappt.get_interface()
-
+    def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
         sequences = pyseq.get_sequences(os.listdir(self.input_path.value))
         for sequence in sequences:
             stitch_sequence(interface, sequence, **self.param_dict())

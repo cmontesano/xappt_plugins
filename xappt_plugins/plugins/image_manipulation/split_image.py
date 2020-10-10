@@ -40,7 +40,7 @@ class SplitImage(xappt.BaseTool):
     def collection(cls) -> str:
         return "Image"
 
-    def execute(self, interface: Optional[xappt.BaseInterface], **kwargs) -> int:
+    def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
         input_path = self.input_image.value
         output_name, output_ext = os.path.splitext(os.path.basename(input_path))
         output_path = os.path.join(self.output_path.value, f'{output_name}.%03d{output_ext}')

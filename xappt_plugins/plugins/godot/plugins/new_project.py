@@ -136,7 +136,7 @@ class NewProject(xappt.BaseTool):
         with open(os.path.join(output_path, "project.manifest"), "w", newline="\n") as fp:
             json.dump(self.template_vars, fp, indent=2)
 
-    def execute(self, interface: Optional[xappt.BaseInterface], **kwargs) -> int:
+    def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
         source_path = self.project_path.value
         project_name = self.project_name.value
         project_path = os.path.join(source_path, project_name)

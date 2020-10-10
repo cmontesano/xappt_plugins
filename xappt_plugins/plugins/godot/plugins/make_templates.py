@@ -297,9 +297,7 @@ class MakeTemplates(xappt.BaseTool):
             if shutil.which("i686-w64-mingw32-strip") is None:
                 raise RuntimeError("'mingw32' binaries not found.")
 
-    def execute(self, interface: Optional[xappt.BaseInterface], **kwargs) -> int:
-        interface = interface or xappt.get_interface()
-
+    def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
         if isinstance(interface, xappt_qt.QtInterface):
             interface.runner.show_console()
             self.stdout_fn = interface.runner.add_output_line
