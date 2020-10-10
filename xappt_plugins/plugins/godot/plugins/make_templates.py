@@ -173,7 +173,7 @@ class MakeTemplates(xappt.BaseTool):
             self._run_command(editor_command, cwd=cwd)
             self._collect_files(bin_path, output_path, **variables)
 
-    def _run_command(self, command: Sequence, *, cwd: Optional[str]):
+    def _run_command(self, command: Sequence, *, cwd: Optional[str] = None):
         silent = self.stdout_fn is not None or self.stderr_fn is not None
         result = self.cmd.run(command, cwd=cwd, silent=silent,
                               stdout_fn=self.stdout_fn, stderr_fn=self.stderr_fn).result
