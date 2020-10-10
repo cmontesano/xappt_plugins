@@ -3,5 +3,5 @@ Pillow~=7.2.0
 pyseq~=0.5.2
 pycryptodome~=3.9.8
 pyscreenshot~=2.2
-xappt~=0.3.5
-xappt-qt~=0.1.6
+xappt~=0.3.6
+xappt-qt~=0.1.8
