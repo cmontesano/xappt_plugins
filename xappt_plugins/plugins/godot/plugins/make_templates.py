@@ -306,9 +306,6 @@ class MakeTemplates(xappt.BaseTool):
             self.stdout_fn = interface.write_console_out
             self.stderr_fn = interface.write_console_err
 
-        if self.interface.ask("Force close?"):
-            self.interface.on_close()
-
         try:
             self.check_prerequisites()
         except RuntimeError as e:
@@ -322,6 +319,3 @@ class MakeTemplates(xappt.BaseTool):
             self.interface.error(str(e))
             self.interface.progress_end()
             return 1
-
-    def can_close(self) -> bool:
-        return self.interface.ask("Is it safe to close?")
