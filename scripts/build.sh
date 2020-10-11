@@ -46,9 +46,9 @@ cp -r $ROOT_PATH $REPO_DIR
 cd $REPO_DIR
 
 python3 -m pip install -r requirements.txt
-python3 -m pip install pyinstaller~=4.0
+python3 -m pip install Nuitka==0.6.9.2
 
-pyinstaller $SCRIPT_PATH/build.spec --onefile
+python -m nuitka --standalone --recurse-all --plugin-enable=qt-plugins xappt_plugins/main.py --exe
 
 ls -l $TMP_DIR/xp
 
