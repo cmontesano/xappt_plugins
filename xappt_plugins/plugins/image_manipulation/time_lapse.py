@@ -3,8 +3,6 @@ import logging
 import os
 import time
 
-from typing import Optional
-
 import pyscreenshot
 
 import xappt
@@ -33,8 +31,8 @@ class TimeLapse(xappt.BaseTool):
                                description="Specify optional recording coordinates: x1,y1,x2,y2",
                                validators=[ValidateRectString])
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, interface: xappt.BaseInterface, **kwargs):
+        super().__init__(interface=interface, **kwargs)
         self._closed = False
 
     @classmethod
@@ -48,7 +46,7 @@ class TimeLapse(xappt.BaseTool):
     def on_close(self):
         self._closed = True
 
-    def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
+    def execute(self, **kwargs) -> int:
         interval = max(2.0, self.interval.value)
         bounds = self.bounds.value
         if len(bounds):
@@ -57,9 +55,9 @@ class TimeLapse(xappt.BaseTool):
             assert len(bounds) == 4
         output_path = self.output_path.value
         output_filename = f"{self.output_name.value}{self.time_format.value}{self.output_format.value}"
-        if isinstance(interface, xappt_qt.QtInterface):
-            interface.runner.rejected.connect(self.on_close)
-        interface.progress_start()
+        if isinstance(self.interface, xappt_qt.QtInterface):
+            self.interface.runner.rejected.connect(self.on_close)
+        self.interface.progress_start()
         try:
             while not self._closed:
                 start = time.perf_counter()
@@ -73,11 +71,11 @@ class TimeLapse(xappt.BaseTool):
                         break
                     elapsed = time.perf_counter() - start
                     if elapsed > interval:
-                        interface.progress_update("", 0.0)
+                        self.interface.progress_update("", 0.0)
                         break
-                    interface.progress_update(message, elapsed/interval)
+                    self.interface.progress_update(message, elapsed/interval)
                     time.sleep(0.1)
         except KeyboardInterrupt:
             pass
-        interface.progress_end()
+        self.interface.progress_end()
         return 0

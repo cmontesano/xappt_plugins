@@ -1,7 +1,5 @@
 import os
 
-from typing import Optional
-
 from PIL import Image
 
 import xappt
@@ -40,13 +38,13 @@ class SplitImage(xappt.BaseTool):
     def collection(cls) -> str:
         return "Image"
 
-    def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
+    def execute(self, **kwargs) -> int:
         input_path = self.input_image.value
         output_name, output_ext = os.path.splitext(os.path.basename(input_path))
         output_path = os.path.join(self.output_path.value, f'{output_name}.%03d{output_ext}')
 
         if output_ext.lower() not in SUPPORTED_EXTENSIONS.keys():
-            interface.error(f"File extension '{output_ext}' is not supported")
+            self.interface.error(f"File extension '{output_ext}' is not supported")
             return 1
 
         tile_size = self.tile_size.value
@@ -55,8 +53,8 @@ class SplitImage(xappt.BaseTool):
         sw, sh = img.size
 
         if sw % tile_size != 0 or sh % tile_size != 0:
-            interface.error(f"The source image resolution ({sw}x{sh}) must be "
-                            f"evenly divisible by the tile size: {tile_size}")
+            self.interface.error(f"The source image resolution ({sw}x{sh}) must be "
+                                 f"evenly divisible by the tile size: {tile_size}")
             return 1
 
         cols = sw // tile_size
@@ -65,18 +63,18 @@ class SplitImage(xappt.BaseTool):
         mode = SUPPORTED_EXTENSIONS[output_ext.lower()]['mode']
 
         total = rows * cols
-        interface.progress_start()
+        self.interface.progress_start()
 
         for y in range(rows):
             for x in range(cols):
                 tile_index = ((y * cols) + x) + 1
-                interface.progress_update(f"Extracting tile {tile_index}", tile_index / total)
+                self.interface.progress_update(f"Extracting tile {tile_index}", tile_index / total)
                 dst = output_path % tile_index
                 result = Image.new(mode, (tile_size, tile_size))
                 result.paste(img, (-x * tile_size, -y * tile_size))
                 result.save(dst)
 
-        interface.progress_end()
-        interface.message("Complete")
+        self.interface.progress_end()
+        self.interface.message("Complete")
 
         return 0

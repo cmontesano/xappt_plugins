@@ -119,8 +119,8 @@ class MakeTemplates(xappt.BaseTool):
     modules = xappt.ParamList(options={'short_name': "m"}, choices=list(GODOT_MODULES.keys()),
                               description="Which third party modules should be included?")
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, interface: xappt.BaseInterface, **kwargs):
+        super().__init__(interface=interface, **kwargs)
         self.cmd = xappt.CommandRunner()
         self.stdout_fn: Optional[Callable] = None
         self.stderr_fn: Optional[Callable] = None
@@ -211,14 +211,14 @@ class MakeTemplates(xappt.BaseTool):
         for f in collected_files:
             yield f
 
-    def run_build(self, interface: xappt.BaseInterface) -> int:
+    def run_build(self) -> int:
         manifest_path = self.manifest_path.value
         project_root = os.path.dirname(manifest_path)
         template_path = os.path.join(project_root, "templates")
 
-        interface.progress_start()
+        self.interface.progress_start()
 
-        interface.progress_update("Loading manifest...", 0.0)
+        self.interface.progress_update("Loading manifest...", 0.0)
 
         with open(manifest_path, "r") as fp:
             manifest = json.load(fp)
@@ -228,17 +228,17 @@ class MakeTemplates(xappt.BaseTool):
             self.cmd.env_var_add("SCRIPT_AES256_ENCRYPTION_KEY", manifest['ENCRYPTION_KEY'])
 
         with xappt.temp_path() as tmp:
-            interface.progress_update("Cloning Godot Engine repository...", 0.0)
+            self.interface.progress_update("Cloning Godot Engine repository...", 0.0)
             # assert self.cmd.run(("git", "clone", "https://github.com/godotengine/godot.git", "godot-build"),
             #                     cwd=tmp, silent=False).result == 0
             self._run_command(("git", "clone", "https://github.com/godotengine/godot.git", "godot-build"), cwd=tmp)
 
             godot_path = os.path.join(tmp, "godot-build")
-            interface.progress_update(f"Fetching...", 0.33)
+            self.interface.progress_update(f"Fetching...", 0.33)
             # assert self.cmd.run(("git", "fetch", "--all", "--tags"), cwd=godot_path, silent=False).result == 0
             self._run_command(("git", "fetch", "--all", "--tags"), cwd=godot_path)
 
-            interface.progress_update(f"Checking out branch '{branch}'...", 0.66)
+            self.interface.progress_update(f"Checking out branch '{branch}'...", 0.66)
             # assert self.cmd.run(("git", "checkout", f"tags/{branch}", "-b", branch),
             #                     cwd=godot_path, silent=False).result == 0
             self._run_command(("git", "checkout", f"tags/{branch}", "-b", branch), cwd=godot_path)
@@ -246,7 +246,7 @@ class MakeTemplates(xappt.BaseTool):
             selected_modules = self.modules.value
             for i, module in enumerate(selected_modules):
                 progress = (i / len(selected_modules))
-                interface.progress_update(f"Cloning module '{module}'...", progress)
+                self.interface.progress_update(f"Cloning module '{module}'...", progress)
                 module_dict = GODOT_MODULES[module]
                 # assert self.cmd.run(("git", "clone", module_dict['repository'], module),
                 #                     cwd=tmp, silent=False).result == 0
@@ -258,7 +258,7 @@ class MakeTemplates(xappt.BaseTool):
             selected_platforms = self.platform.value
             for i, platform in enumerate(selected_platforms):
                 progress = (i / len(selected_platforms))
-                interface.progress_update(f"Building for platform '{platform}'...", progress)
+                self.interface.progress_update(f"Building for platform '{platform}'...", progress)
                 build_vars = BUILD_COMMANDS[platform]
                 if isinstance(build_vars, dict):
                     build_vars = [build_vars]
@@ -270,9 +270,9 @@ class MakeTemplates(xappt.BaseTool):
                     })
                     self._build_platform_template(**argument_dict)
 
-        interface.progress_end()
+        self.interface.progress_end()
 
-        if interface.ask("Build complete.\n\nOpen build folder?"):
+        if self.interface.ask("Build complete.\n\nOpen build folder?"):
             open_file(template_path)
 
         return 0
@@ -297,22 +297,31 @@ class MakeTemplates(xappt.BaseTool):
             if shutil.which("i686-w64-mingw32-strip") is None:
                 raise RuntimeError("'mingw32' binaries not found.")
 
-    def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
-        if isinstance(interface, xappt_qt.QtInterface):
-            interface.runner.show_console()
-            self.stdout_fn = interface.runner.add_output_line
-            self.stderr_fn = interface.runner.add_error_line
+    def execute(self, **kwargs) -> int:
+        if isinstance(self.interface, xappt_qt.QtInterface):
+            # noinspection PyTypeChecker
+            interface: xappt_qt.QtInterface = self.interface
+            interface.clear_console()
+            interface.show_console()
+            self.stdout_fn = interface.write_console_out
+            self.stderr_fn = interface.write_console_err
+
+        if self.interface.ask("Force close?"):
+            self.interface.on_close()
 
         try:
             self.check_prerequisites()
         except RuntimeError as e:
-            interface.error(str(e))
-            interface.progress_end()
+            self.interface.error(str(e))
+            self.interface.progress_end()
             return 1
 
         try:
-            return self.run_build(interface)
+            return self.run_build()
         except AssertionError as e:
-            interface.error(str(e))
-            interface.progress_end()
+            self.interface.error(str(e))
+            self.interface.progress_end()
             return 1
+
+    def can_close(self) -> bool:
+        return self.interface.ask("Is it safe to close?")
