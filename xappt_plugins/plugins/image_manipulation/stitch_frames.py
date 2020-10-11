@@ -2,7 +2,7 @@ import logging
 import math
 import os
 
-from typing import Generator, Optional
+from typing import Generator
 
 import pyseq
 from boltons.iterutils import chunked_iter, pairwise_iter
@@ -145,9 +145,9 @@ class StitchImages(xappt.BaseTool):
     def collection(cls) -> str:
         return "Image"
 
-    def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
+    def execute(self, **kwargs) -> int:
         sequences = pyseq.get_sequences(os.listdir(self.input_path.value))
         for sequence in sequences:
-            stitch_sequence(interface, sequence, **self.param_dict())
-        interface.message("Complete")
+            stitch_sequence(self.interface, sequence, **self.param_dict())
+        self.interface.message("Complete")
         return 0

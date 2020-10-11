@@ -4,8 +4,6 @@ import os
 import pathlib
 import shutil
 
-from typing import Optional
-
 # noinspection PyPackageRequirements
 from Crypto.Cipher import AES
 # noinspection PyPackageRequirements
@@ -40,8 +38,8 @@ class NewProject(xappt.BaseTool):
     class_name = xappt.ParamString(options={'short_name': "c"}, default="GDExample",
                                    description="What should the GDNative class be called?")
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, interface: xappt.BaseInterface, **kwargs):
+        super().__init__(interface=interface, **kwargs)
         self.template_vars = {
             "TEMPLATE_NAME": "",
             "PROJECT_NAME": "",
@@ -136,12 +134,12 @@ class NewProject(xappt.BaseTool):
         with open(os.path.join(output_path, "project.manifest"), "w", newline="\n") as fp:
             json.dump(self.template_vars, fp, indent=2)
 
-    def execute(self, interface: xappt.BaseInterface, **kwargs) -> int:
+    def execute(self, **kwargs) -> int:
         source_path = self.project_path.value
         project_name = self.project_name.value
         project_path = os.path.join(source_path, project_name)
         if os.path.exists(project_path):
-            interface.message(f"Error: path '{project_path}' exists")
+            self.interface.message(f"Error: path '{project_path}' exists")
             return 1
 
         template_name = self.godot_version.value
@@ -150,9 +148,9 @@ class NewProject(xappt.BaseTool):
         self.template_vars['PROJECT_NAME'] = project_name
         self.template_vars['EXPORT_PATH_REL'] = "../export"
 
-        interface.progress_start()
+        self.interface.progress_start()
 
-        interface.progress_update(f"Creating {project_path}", 0.0)
+        self.interface.progress_update(f"Creating {project_path}", 0.0)
 
         godot_project_path = os.path.join(project_path, "project")
         os.makedirs(godot_project_path, exist_ok=True)
@@ -163,29 +161,29 @@ class NewProject(xappt.BaseTool):
         pathlib.Path(os.path.join(project_path, "resources", ".gitkeep")).touch()
 
         if self.encryption.value:
-            interface.progress_update("Generating encryption key", 0.1)
+            self.interface.progress_update("Generating encryption key", 0.1)
             enc_key = self._generate_aes_256_cbc_key()
             self.template_vars['ENCRYPTION_KEY'] = enc_key
 
-        interface.progress_update(f"Generating project", 0.2)
+        self.interface.progress_update(f"Generating project", 0.2)
         self._generate_godot_project(template_name, godot_project_path)
 
         if self.git.value:
-            interface.progress_update("Initializing git", 0.3)
+            self.interface.progress_update("Initializing git", 0.3)
             self._initialize_git_repository(project_path)
 
         if self.gdnative.value:
-            interface.progress_update("Generating GDNative", 0.4)
+            self.interface.progress_update("Generating GDNative", 0.4)
             self.template_vars['GDNATIVE'] = "true"
             self.template_vars['CLASS_NAME'] = self.class_name.value
             self._initialize_gdnative(project_path)
 
-        interface.progress_update("Generating manifest", 0.5)
+        self.interface.progress_update("Generating manifest", 0.5)
         self._generate_manifest(project_path)
 
-        interface.progress_end()
+        self.interface.progress_end()
 
-        if interface.ask("Process complete.\n\nOpen project folder?"):
+        if self.interface.ask("Process complete.\n\nOpen project folder?"):
             open_file(project_path)
 
         return 0
