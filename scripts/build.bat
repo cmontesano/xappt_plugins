@@ -12,6 +12,9 @@ SET ROOT_PATH=%cd%
 cd %ROOT_PATH%
 
 CALL %ROOT_PATH%\venv\Scripts\activate.bat
+
+pip install nuitka
+
 CALL %SCRIPT_PATH%\tasks\patch_pyqt5.bat
 CALL %SCRIPT_PATH%\tasks\build_nuitka.bat
 CALL %SCRIPT_PATH%\tasks\copy_templates.bat
