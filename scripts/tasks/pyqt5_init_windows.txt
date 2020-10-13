@@ -1,0 +1,33 @@
+__path__ = __import__('pkgutil').extend_path(__path__, __name__)
+
+
+def find_qt():
+    import os, sys
+
+    qtcore_dll = 'Qt5Core.dll'
+
+    path_var = os.environ['PATH']
+
+    for path in path_var.split(os.pathsep):
+        if os.path.isfile(os.path.join(path, qtcore_dll)):
+            os.add_dll_directory(path)
+            return
+
+    search_paths = [
+        os.getcwd(),
+        os.path.join(os.path.dirname(__file__), "Qt", "bin"),
+    ]
+
+    if sys.executable is not None:
+        python_dir = os.path.dirname(sys.executable)
+        search_paths.append(python_dir)
+
+    for path in search_paths:
+        if os.path.isfile(os.path.join(path, qtcore_dll)):
+            os.environ['PATH'] = path + os.pathsep + path_var
+            os.add_dll_directory(path)
+            return
+
+
+find_qt()
+del find_qt
