@@ -4,4 +4,4 @@ pyseq~=0.5.2
 pycryptodome~=3.9.8
 pyscreenshot~=2.2
 xappt==0.4.3
-xappt-qt==0.2.5
+xappt-qt==0.2.6
