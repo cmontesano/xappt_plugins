@@ -23,40 +23,29 @@ version_greater_equal "${python_version}" 3.7 || die 1 "Python 3.7 or higher is 
 python3 -c "import venv" &> /dev/null || die 1 "venv module not found"
 python3 -c "import pip" &> /dev/null || die 1 "pip module not found"
 
-
-
+TITLE="Xappt Plugins"
 SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_PATH="$(realpath -s "$SCRIPT_PATH/..")"
 OLD_CWD=$(pwd)
 
-TMP_DIR=$(mktemp -d -t xp-XXXXXXXXXX)
-cd $TMP_DIR
+TMP_PATH=$(mktemp -d -t xp-XXXXXXXXXX)
+cd $TMP_PATH
 
-VENV_DIR=$TMP_DIR/venv
-REPO_DIR=$TMP_DIR/xp
+VENV_PATH="$TMP_PATH/venv"
 
-echo "creating virtual environment: $VENV_DIR"
-python3 -m venv $VENV_DIR
-source $VENV_DIR/bin/activate
+echo "creating virtual environment: $VENV_PATH"
+python3 -m venv "$VENV_PATH"
+source "$VENV_PATH/bin/activate"
 echo "virtualenv activated"
 
-# replace this with a git clone
-cp -r $ROOT_PATH $REPO_DIR
+python3 -m pip install -r "$ROOT_PATH/requirements.txt"
+python3 -m xappt_qt.builder -o "$TMP_PATH/build" -p "$ROOT_PATH" -t "$TITLE"
 
-cd $REPO_DIR
-
-python3 -m pip install -r requirements.txt
-python3 -m pip install Nuitka==0.6.9.2
-
-python -m nuitka --standalone --recurse-all --plugin-enable=qt-plugins xappt_plugins/main.py --exe
-
-ls -l $TMP_DIR/xp
-
-
+cp -r "$TMP_PATH/build" "$ROOT_PATH/build"
 
 cd $OLD_CWD
 
 echo "cleaning up"
-rm -rf $TMP_DIR
+rm -rf $TMP_PATH
 
 echo "complete"
