@@ -43,6 +43,12 @@ python3 -m xappt_qt.builder -o "$TMP_PATH/build" -p "$ROOT_PATH" -t "$TITLE"
 
 cp -r "$TMP_PATH/build" "$ROOT_PATH/build"
 
+TEMPLATE_SRC_PATH="$ROOT_PATH/xappt_plugins/plugins/godot/templates"
+TEMPLATE_DST_PATH="$ROOT_PATH/build/main.dist/xappt_plugins/plugins/godot/templates"
+mkdir -p "$TEMPLATE_DST_PATH"
+cp -r "$TEMPLATE_SRC_PATH/gdnative" "$TEMPLATE_DST_PATH"
+cp -r "$TEMPLATE_SRC_PATH/godot" "$TEMPLATE_DST_PATH"
+
 cd $OLD_CWD
 
 echo "cleaning up"
