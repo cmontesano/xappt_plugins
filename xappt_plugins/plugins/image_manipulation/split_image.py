@@ -21,8 +21,10 @@ class SplitImage(xappt.BaseTool):
     output_path = xappt.ParamString(options={'short_name': "o", "ui": "folder-select"}, default=os.getcwd(),
                                     description="Where should the tiles be saved?",
                                     validators=[ValidateFolderExists])
-    tile_size = xappt.ParamInt(options={'short_name': "t"}, minimum=1,
-                               description="How many pixels wide is each tile? All tiles are assumed to be square.")
+    columns = xappt.ParamInt(options={'short_name': "x"}, minimum=1,
+                             description="How many columns of tiles are there?", default=8)
+    rows = xappt.ParamInt(options={'short_name': "y"}, minimum=1,
+                          description="How many rows of tiles are there?", default=8)
     replace = xappt.ParamBool(options={'short_name': "r"}, default=False,
                               description="Should we replace existing files?")
 
@@ -32,7 +34,7 @@ class SplitImage(xappt.BaseTool):
 
     @classmethod
     def help(cls) -> str:
-        return "Split an image into square tiles."
+        return "Split an image into tiles."
 
     @classmethod
     def collection(cls) -> str:
@@ -47,18 +49,13 @@ class SplitImage(xappt.BaseTool):
             self.interface.error(f"File extension '{output_ext}' is not supported")
             return 1
 
-        tile_size = self.tile_size.value
+        cols = self.columns.value
+        rows = self.rows.value
 
         img = Image.open(input_path)
         sw, sh = img.size
 
-        if sw % tile_size != 0 or sh % tile_size != 0:
-            self.interface.error(f"The source image resolution ({sw}x{sh}) must be "
-                                 f"evenly divisible by the tile size: {tile_size}")
-            return 1
-
-        cols = sw // tile_size
-        rows = sh // tile_size
+        tile_size = (sw // cols, sh // rows)
 
         mode = SUPPORTED_EXTENSIONS[output_ext.lower()]['mode']
 
@@ -70,8 +67,8 @@ class SplitImage(xappt.BaseTool):
                 tile_index = ((y * cols) + x) + 1
                 self.interface.progress_update(f"Extracting tile {tile_index}", tile_index / total)
                 dst = output_path % tile_index
-                result = Image.new(mode, (tile_size, tile_size))
-                result.paste(img, (-x * tile_size, -y * tile_size))
+                result = Image.new(mode, tile_size)
+                result.paste(img, (-x * tile_size[0], -y * tile_size[1]))
                 result.save(dst)
 
         self.interface.progress_end()
