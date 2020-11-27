@@ -124,6 +124,17 @@ class MakeTemplates(xappt.BaseTool):
         self.cmd = xappt.CommandRunner()
         self.stdout_fn: Optional[Callable] = None
         self.stderr_fn: Optional[Callable] = None
+        self.load_saved_data()
+        self.manifest_path.on_value_changed.add(self.update_settings)
+
+    def load_saved_data(self):
+        manifest_path = self.data('last_manifest')
+        if manifest_path is not None:
+            self.manifest_path.default = manifest_path
+            self.manifest_path.value = manifest_path
+
+    def update_settings(self, param: xappt.Parameter):
+        self.set_data("last_manifest", self.manifest_path.value)
 
     @classmethod
     def name(cls) -> str:
