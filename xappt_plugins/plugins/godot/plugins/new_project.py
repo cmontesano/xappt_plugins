@@ -30,7 +30,7 @@ class NewProject(xappt.BaseTool):
                           description="Initialize a git repository in the project folder?")
     encryption = xappt.ParamBool(options={'short_name': "e"},
                                  description="Enable encryption for the project?")
-    godot_version = xappt.ParamString(options={'short_name': "v"}, default="3.2.3-stable",
+    godot_version = xappt.ParamString(options={'short_name': "v"}, default="3.3-stable",
                                       choices=templates.get_templates("godot"),
                                       description="Which version of Godot do you want to target?")
     gdnative = xappt.ParamBool(options={'short_name': "n"},
